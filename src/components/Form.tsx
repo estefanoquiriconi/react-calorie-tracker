@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuid4 } from 'uuid'
 import type { ActionDispatch, ChangeEvent, FormEvent } from 'react'
 import type { Activity } from '../types'
-import type { ActityState, ActivityActions } from '../reducers/activityReducer'
+import type {
+  ActivityState,
+  ActivityActions,
+} from '../reducers/activityReducer'
 
 import { categories } from '../data/categories'
 
 type FormProps = {
-  state: ActityState
+  state: ActivityState
   dispatch: ActionDispatch<[action: ActivityActions]>
 }
 
 const initialState: Activity = {
-  id: uuidv4(),
+  id: uuid4(),
   category: 1,
   name: '',
   calories: 0,
@@ -28,7 +31,7 @@ export const Form = ({ state, dispatch }: FormProps) => {
       )[0]
       setActivity(selectedActivity)
     }
-  }, [state])
+  }, [state.activities, state.activeId])
 
   const handleChange = (
     e: ChangeEvent<HTMLSelectElement | HTMLInputElement>,
@@ -49,11 +52,11 @@ export const Form = ({ state, dispatch }: FormProps) => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    dispatch({ type: 'save-activity', payload: { newActivity: activity } })
+    dispatch({ type: 'SAVE_ACTIVITY', payload: { newActivity: activity } })
 
     setActivity({
       ...initialState,
-      id: uuidv4(),
+      id: uuid4(),
     })
   }
 
@@ -64,7 +67,7 @@ export const Form = ({ state, dispatch }: FormProps) => {
       <div className='grid grid-cols-1 gap-3'>
         <label
           htmlFor='category'
-          className='font-bold'>
+          className='text-sm font-bold text-gray-700'>
           Categoría:{' '}
         </label>
         <select
@@ -84,15 +87,19 @@ export const Form = ({ state, dispatch }: FormProps) => {
       <div className='grid grid-cols-1 gap-3'>
         <label
           htmlFor='name'
-          className='font-bold'>
+          className='text-sm font-bold text-gray-700'>
           Actividad:{' '}
         </label>
 
         <input
           id='name'
           type='text'
-          className='border border-slate-300 py-2 rounded-lg'
-          placeholder='Ej. Almuerzo, Judo de Naranja, Ensalada, Pesas, Ejercicio, Bicicleta'
+          className='border border-slate-300 p-2 rounded-lg'
+          placeholder={
+            activity.category === 1
+              ? 'Ej. Almuerzo, Jugo de Naranja, Ensalada'
+              : 'Ej. Pesas, Ejercicio, Bicicleta'
+          }
           value={activity.name}
           onChange={handleChange}
         />
@@ -100,23 +107,23 @@ export const Form = ({ state, dispatch }: FormProps) => {
       <div className='grid grid-cols-1 gap-3'>
         <label
           htmlFor='calories'
-          className='font-bold'>
+          className='text-sm font-bold text-gray-700'>
           Calorías:{' '}
         </label>
 
         <input
           id='calories'
           type='number'
-          className='border border-slate-300 py-2 rounded-lg'
+          className='border border-slate-300 p-2 rounded-lg'
           placeholder='Calorías. ej. 400 o 500'
-          value={activity.calories}
+          value={activity.calories !== 0 ? activity.calories : ''}
           onChange={handleChange}
         />
       </div>
 
       <input
         type='submit'
-        className='bg-gray-800 hover:bg-gray-900 w-full p-2 font-bold uppercase text-white cursor-pointer disabled:opacity-10 disabled:cursor-default'
+        className='bg-gray-800 hover:bg-gray-900 w-full p-2 font-bold uppercase text-white cursor-pointer disabled:opacity-10 disabled:cursor-not-allowed'
         value={`Guardar ${activity.category === 1 ? 'Comida' : 'Ejercicio'}`}
         disabled={!isValidActivity()}
       />
